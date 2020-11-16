@@ -5,7 +5,7 @@
 #include <string.h>
 #include <iostream>
 
-int main(int argc, char** argv);
-std::string generatePrivateKey();
+// int main(int argc, char** argv);
+// std::string generatePrivateKey();
 
 #endif //MAIN_H
