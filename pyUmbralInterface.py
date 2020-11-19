@@ -1,4 +1,4 @@
-from umbral import keys, signing, pre, config, cfrags
+from umbral import keys, signing, pre, config, kfrags, cfrags
 from umbral.params import UmbralParameters
 from umbral.config import default_curve
 from umbral.curve import SECP256K1
@@ -38,40 +38,31 @@ def decrypt_ciphertext(priv_key_str_hex, capsule_hex, ciphertext_hex):
     return cleartext.decode("utf-8")
 
 
-def reencrypt(alice_priv_key_hex, alice_priv_signing_key_hex,
-              bob_pub_key_hex, capsule_hex):
+def get_reencryption_key(alice_priv_key_hex, alice_priv_signing_key_hex, bob_pub_key_hex):
     alice_priv_key = keys.UmbralPrivateKey.from_bytes(
         bytes.fromhex(alice_priv_key_hex))
     alice_priv_signing_key = keys.UmbralPrivateKey.from_bytes(
         bytes.fromhex(alice_priv_signing_key_hex))
     bob_pub_key = keys.UmbralPublicKey.from_bytes(
         bytes.fromhex(bob_pub_key_hex))
-    params = UmbralParameters(curve=curve)
-    capsule = pre.Capsule.from_bytes(bytes.fromhex(capsule_hex), params)
 
-    alices_signer = signing.Signer(private_key=alice_priv_signing_key);
+    alices_signer = signing.Signer(private_key=alice_priv_signing_key)
     kfrags = pre.generate_kfrags(delegating_privkey=alice_priv_key,
                                  signer=alices_signer,
                                  receiving_pubkey=bob_pub_key,
                                  threshold=1,
                                  N=1)
     kfrag = kfrags[0]
-    # return kfrag.to_bytes().hex()
-
-    capsule.set_correctness_keys(delegating=alice_priv_key.get_pubkey(),
-                                 receiving=bob_pub_key,
-                                 verifying=alice_priv_signing_key.get_pubkey())
-    cfrag = pre.reencrypt(kfrag=kfrag, capsule=capsule)
-    return cfrag.to_bytes().hex()
+    return kfrag.to_bytes().hex()
 
 
-def cfrag_decrypt(alice_pub_key_hex, alice_pub_signing_key_hex, bob_priv_key_hex, capsule_hex, cfrag_hex, ciphertext_hex):
+def kfrag_decrypt(alice_pub_key_hex, alice_pub_signing_key_hex, bob_priv_key_hex, capsule_hex, kfrag_hex, ciphertext_hex):
     bob_priv_key = keys.UmbralPrivateKey.from_bytes(
         bytes.fromhex(bob_priv_key_hex))
     alice_pub_key = keys.UmbralPublicKey.from_bytes(bytes.fromhex(alice_pub_key_hex))
     alice_pub_signing_key = keys.UmbralPublicKey.from_bytes(bytes.fromhex(alice_pub_signing_key_hex))
 
-    cfrag = cfrags.CapsuleFrag.from_bytes(bytes.fromhex(cfrag_hex))
+    kfrag = kfrags.KFrag.from_bytes(bytes.fromhex(kfrag_hex))
     ciphertext = bytes.fromhex(ciphertext_hex)
     params = UmbralParameters(curve=curve)
     capsule = pre.Capsule.from_bytes(bytes.fromhex(capsule_hex), params)
@@ -80,6 +71,7 @@ def cfrag_decrypt(alice_pub_key_hex, alice_pub_signing_key_hex, bob_priv_key_hex
                                  receiving=bob_priv_key.get_pubkey(),
                                  verifying=alice_pub_signing_key)
 
+    cfrag = pre.reencrypt(kfrag=kfrag, capsule=capsule)
     capsule.attach_cfrag(cfrag)
     cleartext = pre.decrypt(ciphertext=ciphertext,
                             capsule=capsule,

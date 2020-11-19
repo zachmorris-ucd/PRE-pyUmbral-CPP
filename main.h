@@ -23,16 +23,15 @@ class PRE {
                std::string capsule,
                std::string ciphertext,
                std::string &result_message);
-  bool reencrypt(std::string alice_private_key,
+  bool get_reencryption_key(std::string alice_private_key,
                        std::string alice_private_signing_key,
                        std::string bob_public_key,
-                       std::string capsule,
-                       std::string &cfrag);
-  bool cfrag_decrypt(std::string alice_public_key,
+                       std::string &kfrag);
+  bool kfrag_decrypt(std::string alice_public_key,
                      std::string alice_public_signing_key,
                      std::string bob_private_key,
                      std::string capsule,
-                     std::string cfrag,
+                     std::string kfrag,
                      std::string ciphertext,
                      std::string &result);
 

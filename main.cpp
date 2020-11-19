@@ -83,14 +83,13 @@ bool PRE::decrypt(std::string key,
     return true;
 }
 
-bool PRE::reencrypt(std::string alice_private_key,
+bool PRE::get_reencryption_key(std::string alice_private_key,
                     std::string alice_private_signing_key,
                     std::string bob_public_key,
-                    std::string capsule,
                     std::string &kfrag) {
-    int argc = 5;
+    int argc = 4;
 
-    char *arg1 = new char[]{"reencrypt"};
+    char *arg1 = new char[]{"get_reencryption_key"};
 
     char *arg2 = new char[alice_private_key.length() + 1];
     strcpy(arg2, alice_private_key.c_str());
@@ -101,26 +100,23 @@ bool PRE::reencrypt(std::string alice_private_key,
     char *arg4 = new char[bob_public_key.length() + 1];
     strcpy(arg4, bob_public_key.c_str());
 
-    char *arg5 = new char[capsule.length() + 1];
-    strcpy(arg5, capsule.c_str());
-
-    char *argv[] = {arg1, arg2, arg3, arg4, arg5};
+    char *argv[] = {arg1, arg2, arg3, arg4};
 
     kfrag = run_python_function(argc, argv);
 
     return true;
 }
 
-bool PRE::cfrag_decrypt(std::string alice_public_key,
+bool PRE::kfrag_decrypt(std::string alice_public_key,
                         std::string alice_public_signing_key,
                         std::string bob_private_key,
                         std::string capsule,
-                        std::string cfrag,
+                        std::string kfrag,
                         std::string ciphertext,
                         std::string &result) {
     int argc = 7;
 
-    char *arg1 = new char[]{"cfrag_decrypt"};
+    char *arg1 = new char[]{"kfrag_decrypt"};
 
     char *arg2 = new char[alice_public_key.length() + 1];
     strcpy(arg2, alice_public_key.c_str());
@@ -134,8 +130,8 @@ bool PRE::cfrag_decrypt(std::string alice_public_key,
     char *arg5 = new char[capsule.length() + 1];
     strcpy(arg5, capsule.c_str());
 
-    char *arg6 = new char[cfrag.length() + 1];
-    strcpy(arg6, cfrag.c_str());
+    char *arg6 = new char[kfrag.length() + 1];
+    strcpy(arg6, kfrag.c_str());
 
     char *arg7 = new char[ciphertext.length() + 1];
     strcpy(arg7, ciphertext.c_str());
@@ -217,21 +213,23 @@ std::string PRE::run_python_function(int argc, char **argv) {
     return nullptr;
 }
 
+void message_help() {
+    std::cout << "Commands:\n";
+    std::cout << "  --generate_private_key\n";
+    std::cout << "  --generate_public_key [private_key]\n";
+    std::cout << "  --generate_keypair\n";
+    std::cout << "  --encrypt [key] [message]\n";
+    std::cout << "  --decrypt [key] [encrypted message]\n";
+    std::cout << "  --get_reencryption_key [alice private key] [alice private signing key] [bob public key]\n";
+    std::cout << "  --kfrag_decrypt [alice pub key] [alice pub signing key] [bob private key] [capsule] [kfrag] [ciphertext]\n";
+    std::cout << "  --run_test\n";
+}
+
 int main(int argc, char *argv[]) {
     PRE pre = PRE();
 
     if (argc == 1) {
-        std::cout << "Commands:\n";
-        std::cout << "  --generate_private_key\n";
-        std::cout << "  --generate_public_key [private_key]\n";
-        std::cout << "  --generate_keypair\n";
-        std::cout << "  --encrypt [key] [message]\n";
-        std::cout << "  --decrypt [key] [encrypted message]\n";
-        std::cout
-            << "  --reencrypt [alice private key] [alice private signing key] [bob public key] [capsule]\n";
-        std::cout
-            << "  --cfrag_decrypt [alice pub key] [alice pub signing key] [bob private key] [capsule] [cfrag] [ciphertext]\n";
-
+        message_help();
         return 0;
     } else {
         std::string command(argv[1]);
@@ -282,29 +280,28 @@ int main(int argc, char *argv[]) {
                         std::string(argv[4]),
                         message);
             std::cout << "Decrypted Message: " << message << std::endl;
-        } else if (command == "--reencrypt") {
+        } else if (command == "--get_reencryption_key") {
             if (argc <= 4) {
                 std::cout
-                    << "Usage: --reencrypt [alice private key] [alice private signing key] [bob public key] [capsule]\n";
+                    << "Usage: --get_reencryption_key [alice private key] [alice private signing key] [bob public key]\n";
                 return 0;
             }
 
             std::string kfrag("");
-            pre.reencrypt(std::string(argv[2]),
+            pre.get_reencryption_key(std::string(argv[2]),
                           std::string(argv[3]),
                           std::string(argv[4]),
-                          std::string(argv[5]),
                           kfrag);
-            std::cout << "CFrag: " << kfrag << std::endl;
-        } else if (command == "--cfrag_decrypt") {
+            std::cout << "Re encryption key (KFrag): " << kfrag << std::endl;
+        } else if (command == "--kfrag_decrypt") {
             if (argc <= 4) {
                 std::cout
-                    << "Usage: --cfrag_decrypt [alice pub key] [alice pub signing key] [bob private key] [capsule] [cfrag] [ciphertext]\n";
+                    << "Usage: --kfrag_decrypt [alice pub key] [alice pub signing key] [bob private key] [capsule] [kfrag] [ciphertext]\n";
                 return 0;
             }
 
             std::string res("");
-            pre.cfrag_decrypt(std::string(argv[2]),
+            pre.kfrag_decrypt(std::string(argv[2]),
                               std::string(argv[3]),
                               std::string(argv[4]),
                               std::string(argv[5]),
@@ -312,6 +309,81 @@ int main(int argc, char *argv[]) {
                               std::string(argv[7]),
                               res);
             std::cout << "Decrypted Message: " << res << std::endl;
+        } else if(command == "--run_test") {
+            std::string alice_priv_key, alice_pub_key;
+            std::string alice_priv_signing_key, alice_pub_signing_key;
+            std::string bob_priv_key, bob_pub_key;
+
+            std::string capsule;
+            std::string kfrag;
+            std::string ciphertext;
+            std::string resulttext;
+
+            std::string origmessage("This is the FIRST message to be encrypted.");
+            std::string nextmessage("This is the SECOND message to be encrypted");
+
+            // Generate public/private keys for Alice, Bob, and Alice's signer.
+            pre.generate_keypair(alice_priv_key, alice_pub_key);
+            pre.generate_keypair(alice_priv_signing_key, alice_pub_signing_key);
+            pre.generate_keypair(bob_priv_key, bob_pub_key);
+
+            std::cout << "Alice's FIRST message:\n";
+            std::cout << "  " << origmessage << std::endl << std::endl;
+            std::cout << "Alice's SECOND message:\n";
+            std::cout << "  " << nextmessage << std::endl << std::endl;
+
+            std::cout << "Alice:\n";
+            std::cout << "  Private key: " << alice_priv_key << std::endl;
+            std::cout << "  Public key: " << alice_pub_key << std::endl;
+            std::cout << std::endl;
+            std::cout << "Alice Signing:\n";
+            std::cout << "  Private key: " << alice_priv_signing_key << std::endl;
+            std::cout << "  Public key: " << alice_pub_signing_key << std::endl;
+            std::cout << std::endl;
+            std::cout << "Bob:\n";
+            std::cout << "  Private key: " << bob_priv_key << std::endl;
+            std::cout << "  Public key: " << bob_pub_key << std::endl << std::endl;
+
+            // Generate a re-encryption key, or KFrag, using Alice's private
+            // key, Alice's Signer's private key, and Bob's public key.
+            pre.get_reencryption_key(alice_priv_key, alice_priv_signing_key, bob_pub_key, kfrag);
+
+            std::cout << "Re-Encryption Key (KFrag):\n";
+            std::cout << "  " << kfrag << std::endl << std::endl;
+
+            // Encrypt the cipher text using Alice's public key.
+            pre.encrypt(alice_pub_key, origmessage, capsule, ciphertext);
+
+            std::cout << "MESSAGE ONE\n";
+            std::cout << "  Capsule:\n";
+            std::cout << "    " << capsule << std::endl << std::endl;
+            std::cout << "  Encrypted Text:\n";
+            std::cout << "    " << ciphertext << std::endl << std::endl;
+
+            // Re-encrypt the ciphertext using the KFrag (re-encryption key) and
+            // then decrypt the re-encrypted ciphertext using Bob's private key.
+            pre.kfrag_decrypt(alice_pub_key, alice_pub_signing_key, bob_priv_key, capsule, kfrag, ciphertext, resulttext);
+
+            std::cout << "  Alice's Original Message Decrypted by Bob:\n";
+            std::cout << "    " << resulttext << std::endl << std::endl;
+
+            pre.encrypt(alice_pub_key, nextmessage, capsule, ciphertext);
+
+            // The point of doing this a second time is to show that the
+            // re-encryption key (KFrag) can be used to convert anything
+            // encrypted by Alice's public key to be used by Bob.
+            std::cout << "MESSAGE TWO\n";
+            std::cout << "  Capsule:\n";
+            std::cout << "    " << capsule << std::endl << std::endl;
+            std::cout << "  Encrypted Text:\n";
+            std::cout << "    " << ciphertext << std::endl << std::endl;
+
+            pre.kfrag_decrypt(alice_pub_key, alice_pub_signing_key, bob_priv_key, capsule, kfrag, ciphertext, resulttext);
+            std::cout << "  Alice's Original Message Decrypted by Bob:\n";
+            std::cout << "    " << resulttext << std::endl << std::endl;
+        } else {
+            std::cout << std::endl << command << " is not a valid command.\n\n";
+            message_help();
         }
     }
 
