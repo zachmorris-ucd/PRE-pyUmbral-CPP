@@ -1,4 +1,4 @@
-This adapts the pyUmbral threshold re-encryption (very similar to proxy re-encryption) into a C++ interface so that it can be used with C++. This is not an entire adaptation of pyUmbral to C++, it just serves as an example of proxy re-encryption in C++. 
+This adapts the pyUmbral threshold re-encryption (very similar to proxy re-encryption) into a C++ interface so that it can be used with C++. This is not an entire adaptation of pyUmbral to C++, it just serves as an example of proxy re-encryption in C++. Ultimately, the goal will be to fit the functionalities from pyUmbralInterface.py and main.cpp into the ResilientDB network.
 
 ## Requirements
 CMake, Make, Python3
