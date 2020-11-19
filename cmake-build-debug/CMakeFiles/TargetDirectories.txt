@@ -1,3 +1,0 @@
-/Users/ztowne13/Documents/ecs132-proxy-re-encryption/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/Users/ztowne13/Documents/ecs132-proxy-re-encryption/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/ztowne13/Documents/ecs132-proxy-re-encryption/cmake-build-debug/CMakeFiles/PRE_CPP.dir

@@ -1,5 +1,7 @@
 mirdef.h
 miracl.h
+cmake-build-debug
+__pycache__
 
 # Prerequisites
 *.d
