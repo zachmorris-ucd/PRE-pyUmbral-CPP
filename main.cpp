@@ -13,7 +13,9 @@ bool PRE::generate_keypair(std::string &result_private_key,
 bool PRE::generate_private_key(std::string &result_private_key) {
     int argc = 1;
 
-    char *arg1 = new char[]{"generate_private_key"};
+    std::string functionName("generate_private_key");
+    char *arg1 = new char[functionName.length() + 1];
+    strcpy(arg1, functionName.c_str());
 
     char *argv[] = {arg1};
 
@@ -25,7 +27,9 @@ bool PRE::generate_private_key(std::string &result_private_key) {
 bool PRE::generate_public_key(std::string private_key,
                               std::string &result_public_key) {
     int argc = 2;
-    char *arg1 = new char[]{"generate_public_key"};
+    std::string functionName("generate_public_key");
+    char *arg1 = new char[functionName.length() + 1];
+    strcpy(arg1, functionName.c_str());
 
     char *arg2 = new char[private_key.length() + 1];
     strcpy(arg2, private_key.c_str());
@@ -42,7 +46,9 @@ bool PRE::encrypt(std::string key,
                   std::string &result_capsule,
                   std::string &result_ciphertext) {
     int argc = 3;
-    char *arg1 = new char[]{"encrypt_ciphertext"};
+    std::string functionName("encrypt_ciphertext");
+    char *arg1 = new char[functionName.length() + 1];
+    strcpy(arg1, functionName.c_str());
 
     char *arg2 = new char[key.length() + 1];
     strcpy(arg2, key.c_str());
@@ -65,7 +71,9 @@ bool PRE::decrypt(std::string key,
                   std::string &result_message) {
     int argc = 4;
 
-    char *arg1 = new char[]{"decrypt_ciphertext"};
+    std::string functionName("decrypt_ciphertext");
+    char *arg1 = new char[functionName.length() + 1];
+    strcpy(arg1, functionName.c_str());
 
     char *arg2 = new char[key.length() + 1];
     strcpy(arg2, key.c_str());
@@ -89,7 +97,9 @@ bool PRE::get_reencryption_key(std::string alice_private_key,
                     std::string &kfrag) {
     int argc = 4;
 
-    char *arg1 = new char[]{"get_reencryption_key"};
+    std::string functionName("get_reencryption_key");
+    char *arg1 = new char[functionName.length() + 1];
+    strcpy(arg1, functionName.c_str());
 
     char *arg2 = new char[alice_private_key.length() + 1];
     strcpy(arg2, alice_private_key.c_str());
@@ -116,7 +126,9 @@ bool PRE::kfrag_decrypt(std::string alice_public_key,
                         std::string &result) {
     int argc = 7;
 
-    char *arg1 = new char[]{"kfrag_decrypt"};
+    std::string functionName("kfrag_decrypt");
+    char *arg1 = new char[functionName.length() + 1];
+    strcpy(arg1, functionName.c_str());
 
     char *arg2 = new char[alice_public_key.length() + 1];
     strcpy(arg2, alice_public_key.c_str());
