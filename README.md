@@ -3,7 +3,7 @@ This adapts the pyUmbral threshold re-encryption (very similar to proxy re-encry
 The goal of this will be to fit the functionalities from pyUmbralInterface.py and main.cpp into the ResilientDB network. We built this entire program just to allow the code to be implemented into ResilientDB, but fell short because we struggled to get python to run on our docker implementation of ResilientDB.
 
 ## Requirements
-CMake, Make, Python3
+Make, Python3
 
 # Usage
 
